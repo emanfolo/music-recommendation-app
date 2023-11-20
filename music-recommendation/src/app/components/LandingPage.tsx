@@ -3,137 +3,143 @@
 import { useRef, useState, useEffect } from "react";
 import { httpsCallable } from "firebase/functions";
 import { functions, init } from "../../../firebase";
-import { LoadingSpinnerSmall } from ".";
+import { useRouter } from "next/navigation";
+
+const LoadingSpinner: React.FC = () => {
+  return <span className="loader"></span>;
+};
 
 export const LandingPage = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [validationTriggered, setValidationTriggered] = useState(false);
 
   useEffect(() => {
     init().then(() => setLoading(false));
   });
 
-  // const page2Ref = useRef<HTMLDivElement | null>(null);
-  // const arrowRef = useRef<HTMLDivElement | null>(null);
-  // const scrollToPage = () => {
-  //   if (page2Ref.current) {
-  //     page2Ref.current.scrollIntoView({ behavior: "smooth" });
-  //   }
-  // };
-
   const [mood, setMood] = useState<string>("");
-  const [colorScheme, setColorScheme] = useState("white")
+  const [colorScheme, setColorScheme] = useState("");
+  const [colorSchemeLoading, setColorSchemeLoading] = useState<Boolean>(false);
+
+  const router = useRouter();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMood(event.target.value);
+    const inputValue = event.target.value;
+    setMood(inputValue);
+    validateMoodEntered(inputValue);
   };
 
-  const handleButtonClick = () => {
-    // Perform actions with the mood state if needed
-    console.log(`Mood: ${mood}`);
+  const validateMoodEntered = (inputValue) => {
+    if (inputValue.length < 3 || inputValue.length > 20) {
+      setValidationError(
+        inputValue.length < 3
+          ? "Your mood is too short. Please enter between 3-20 characters."
+          : "Your mood is too long. Please enter between 3-20 characters.",
+      );
+    } else {
+      setValidationError("");
+    }
   };
 
   const handleMoodEntered = async () => {
-    setLoading(true);
-  
+    setValidationTriggered(true);
+
+    if (typeof window === "undefined" || validationError) {
+      return;
+    }
+    setColorSchemeLoading(true);
+
     const handleMoodFunction = httpsCallable(functions, "handleMood");
-  
+
     try {
+      // console.log("Color scheme loading at the start:", colorSchemeLoading);
       const response = await handleMoodFunction({ mood });
-  
+      console.log(response);
+
       if (typeof response.data !== "string") {
+        console.error("Unexpected response format:", response);
         setError("There's been an issue with our server, please try again.");
+      } else if (response.data === "false") {
+        setError("Invalid mood entered, please try again");
+      } else if (response.data === "No response from OpenAI") {
+        setError("There's been an issue with OpenAI, please try again.");
       } else {
-        const colourRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-        if (response.data === "false") {
-          setError("Invalid mood entered, please try again");
-        } else if (response.data === "No response from OpenAI") {
-          setError("There's been an issue with OpenAI, please try again.");
-        } else if (colourRegex.test(response.data)) {
-          console.log("success");
-          setColorScheme(response.data);
-        }
+        console.log("Successfully received response:", response.data);
+        const object = JSON.parse(response.data);
+        const gradient: string = object.backgroundColor;
+        setColorScheme(gradient);
+        router.push("/player")
       }
     } catch (error) {
+      console.error("Error calling handleMoodFunction:", error);
       setError("There's been an issue with our server, please try again.");
     } finally {
-      setLoading(false);
+      setColorSchemeLoading(false);
+      setValidationTriggered(false);
+      // console.log("Color scheme loading at the end:", colorSchemeLoading);
     }
   };
-  
-
 
   return (
     <div className="">
       <div
         id="page1"
-        className="h-screen flex flex-col justify-center items-center bg-white text-black"
+        className={`h-screen flex flex-col justify-center items-center bg-white text-black ${colorScheme}`}
       >
-        {/* Header */}
-        <h1 className="text-5xl font-bold mb-8 animate-fadeIn">
-          Mood Music App
-        </h1>
-
-        {/* Subtitle */}
-        <h3
-          className="text-center mb-16 animate-fadeIn"
-          style={{ paddingTop: "40px" }}
-        >
-          Discover new music tailored to you. Use AI to create a custom Spotify
-          or YouTube playlist.
-        </h3>
-
-        {/* Mood input */}
-        <div className="flex  h-12 animate-fadeIn">
-          <div className="rounded-md rounded-r-none border-l border-t border-b border-black p-3 text-center sm:min-w-[200px] md:min-w-[500px] lg:min-w-[650px]">
-            <input
-              type="text"
-              placeholder="Tell us your mood..."
-              className="w-full focus:outline-none"
-              onChange={(event) => {
-                setMood(event.target.value)}}
-            ></input>
-            {/* Do validations soon. Not too short, and not too long 1-20 characters */}
-          </div>
-          <div className="flex justify-center align-middle w-12 h-12 border-black border-l border-t border-r rounded-r-md border-b  bg-blue-100">
-            {loading ? (
-              // <LoadingSpinnerSmall />
-              <></>
-
-            ) : (
-                          <button onClick={handleMoodEntered}>Go</button>
-
+        {colorSchemeLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            {/* Header */}
+            <h1 className="text-5xl font-bold mb-8 animate-fadeIn">
+              Mood Music App
+            </h1>
+            {/* Subtitle */}
+            <h3
+              className="text-center mb-16 animate-fadeIn"
+              style={{ paddingTop: "40px" }}
+            >
+              Discover new music tailored to you. Use AI to create a custom
+              Spotify or YouTube playlist.
+            </h3>
+            {/* Mood input */}
+            <div className="flex  h-12 animate-fadeIn">
+              <div
+                className={`rounded-md border border-black p-3 text-center sm:min-w-[400px] md:min-w-[500px] lg:min-w-[650px] shadow-md ${
+                  validationError && validationTriggered
+                    ? "shake border-red-500"
+                    : ""
+                }`}
+              >
+                <input
+                  type="text"
+                  placeholder="Tell us your mood..."
+                  className="w-full focus:outline-none"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+            {validationError && validationTriggered && (
+              <div className="text-red-500  text-xs mt-2">
+                {validationError}
+              </div>
             )}
-          </div>
-        </div>
-
-        {/* Upside Down Triangle */}
-        {/* <div             
-              className="triangle-container" onClick={scrollToPage} >
-                     <div className="triangle animate-triangle"></div>
-                   </div> */}
-      </div>
-      {/* Page 2 - I want a text box that you enter your mood in and generates a gradient based on your entry (firebase function) also cover cases where no answer is suitable */}
-      <div
-        id="page2"
-        // ref={page2Ref}
-        className="flex h-screen justify-center items-center w-screen bg-white"
-      >
-        {/* <div className="max-w-md p-6 bg-white rounded border border-black">
-        <input
-          type="text"
-          placeholder="Tell us your mood..."
-          value={mood}
-          onChange={handleInputChange}
-          className="w-full p-2 border rounded focus:outline-none"
-        />
-        <button
-          onClick={handleButtonClick}
-          className="ml-2 p-2 bg-blue-500 text-white rounded"
-        >
-          I feel like that
-        </button>
-      </div> */}
+            {error && <div className="text-red-500  text-xs mt-2">{error}</div>}
+            <button
+              onClick={handleMoodEntered}
+              className={` bg-blue-100 cursor-pointer  bg-opacity-50 border-black border text-black rounded-full py-2 px-4 mt-8${
+                validationError && validationTriggered
+                  ? " opacity-20 cursor-not-allowed "
+                  : ""
+              } `}
+            >
+              Press Enter
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

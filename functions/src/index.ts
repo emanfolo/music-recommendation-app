@@ -14,39 +14,25 @@ import OpenAI from "openai"
 
 
 export const handleMood = functions.https.onCall(async (request) => {
-
     const openai = new OpenAI({
         apiKey: process.env.OPEN_AI_KEY,
     });
 
     try {
-        const prompt = `Give me a hex color the represents the mood ${request.mood}. Only send me the hex. If you cannot provide one, send me back the word "false".`
+        const userPrompt = `Generate a TailwindCSS color gradient that best describes the mood of ${request.mood}. Please format the output in JSON with the key 'backgroundColor'. If you cannot provide one, send me back the word "false". The css should be in tailwind format e.g. bg-gradient-to-r from-cyan-500 to-teal-500. The css should be able to pass the following regex: \b(bg-gradient-to-[a-z]+(?: from-[a-z]+)?(?: via-[a-z]+)?(?: to-[a-z]+)?).`
+        const systemPrompt = 'System, you are a CSS code generator assistant. Your task is to create a Tailwind CSS color gradient that best represents a given mood. The output should be in JSON format with a single key called backgroundColor. Provide a visually appealing gradient that aligns with the specified mood.'
 
-
-        const response = await openai.chat.completions.create({
-            messages: [{ role: "user", content: prompt }],
+        const { choices } = await openai.chat.completions.create({
+            messages: [{ role: "user", content: userPrompt }, { role: "system", content: systemPrompt }],
             model: "gpt-3.5-turbo",
         });
 
-        const responseData = response['choices'][0]['message']['content']
-        
-        // Log the completion or save it to Firestore, etc.
-        console.log('OpenAI Completion:', responseData);
-    
-        // Send the completion back in the response
-        return responseData
-      } catch (error) {
-        console.error('Error calling OpenAI', error);
-        return error
-      }
-})
+        const responseData = choices[0]?.message?.content || 'No response from OpenAI';
 
+        return responseData;
+    } catch (error) {
+        console.error('Error calling OpenAI:', error);
+        return { error: 'Internal Server Error' };
+    }
+});
 
-
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
-
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });

@@ -1,5 +1,4 @@
-import Image from 'next/image'
-import {Header, LandingPage, MoodForm} from "./components"
+import { LandingPage } from "./components";
 export default function Home() {
   return (
     <div className="overscroll-none">
@@ -7,11 +6,6 @@ export default function Home() {
         <title>Discover new music</title>
       </head>
       <LandingPage />
-
-      {/* <div className="container w-screen">
-        <Header />
-        <MoodForm />
-      </div> */}
     </div>
-  )
+  );
 }
