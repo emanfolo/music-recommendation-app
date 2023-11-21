@@ -21,65 +21,87 @@ export const LandingPage = () => {
   });
 
   const [mood, setMood] = useState<string>("");
-  const [colorScheme, setColorScheme] = useState("");
-  const [colorSchemeLoading, setColorSchemeLoading] = useState<Boolean>(false);
+  const [dataLoading, setDataLoading] = useState<Boolean>(false);
 
   const router = useRouter();
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
     setMood(inputValue);
-    validateMoodEntered(inputValue);
+    validateMoodInput(inputValue);
   };
 
-  const validateMoodEntered = (inputValue) => {
-    if (inputValue.length < 3 || inputValue.length > 20) {
-      setValidationError(
-        inputValue.length < 3
-          ? "Your mood is too short. Please enter between 3-20 characters."
-          : "Your mood is too long. Please enter between 3-20 characters.",
-      );
-    } else {
-      setValidationError("");
+  const validateMoodInput = (input) => {
+    const minLength = 3;
+    const maxLength = 20;
+
+    // Check for length
+    if (input.length < minLength || input.length > maxLength) {
+      setValidationError("Your mood must be between 3 and 20 characters.");
+      return
     }
+  
+    // Check for numbers or special characters
+    if (/[\d!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(input)) {
+      setValidationError("Your mood cannot include numbers or special characters.");
+      return
+    }
+  
+    // Check for more than 3 unique characters
+    const uniqueCharacters = new Set(input.split(''));
+    if (uniqueCharacters.size <= 2) {
+      setValidationError("Your mood must have 3 or more unique characters.");
+      return
+    }
+
+    setValidationError("")
   };
 
-  const handleMoodEntered = async () => {
-    setValidationTriggered(true);
 
+
+  // Change first response to be something that validates input from the backend maybe
+
+  const handleInputConfirmation = () => {
+    console.log(validationError)
+
+    setValidationTriggered(true);
+    setDataLoading(true);
+
+    // Later on I can improve this input validation. 
+
+    if (!validationError) {
+      localStorage.setItem('moodInput', mood)
+      router.push('/genres')
+    }
+  
+    setDataLoading(false);
+  }
+
+  const handleDataRequest = async () => {
     if (typeof window === "undefined" || validationError) {
       return;
     }
-    setColorSchemeLoading(true);
 
-    const handleMoodFunction = httpsCallable(functions, "handleMood");
+    setDataLoading(true);
+
+    const requestSpotifyData = httpsCallable(functions, "getSpotifySongs");
 
     try {
-      // console.log("Color scheme loading at the start:", colorSchemeLoading);
-      const response = await handleMoodFunction({ mood });
+      const response = await requestSpotifyData({ mood });
       console.log(response);
-
-      if (typeof response.data !== "string") {
-        console.error("Unexpected response format:", response);
-        setError("There's been an issue with our server, please try again.");
-      } else if (response.data === "false") {
-        setError("Invalid mood entered, please try again");
-      } else if (response.data === "No response from OpenAI") {
+      if (response.data === "No response from OpenAI") {
         setError("There's been an issue with OpenAI, please try again.");
       } else {
         console.log("Successfully received response:", response.data);
-        const object = JSON.parse(response.data);
-        const gradient: string = object.backgroundColor;
-        setColorScheme(gradient);
-        router.push("/player")
+        // router.push("/player")
       }
+
     } catch (error) {
-      console.error("Error calling handleMoodFunction:", error);
+      console.error("Error calling requestParams function:", error);
       setError("There's been an issue with our server, please try again.");
     } finally {
-      setColorSchemeLoading(false);
+      setDataLoading(false);
       setValidationTriggered(false);
-      // console.log("Color scheme loading at the end:", colorSchemeLoading);
     }
   };
 
@@ -87,10 +109,10 @@ export const LandingPage = () => {
     <div className="">
       <div
         id="page1"
-        className={`h-screen flex flex-col justify-center items-center bg-white text-black ${colorScheme}`}
+        className={`h-screen flex flex-col justify-center items-center bg-white text-black`}
       >
-        {colorSchemeLoading ? (
-          <LoadingSpinner />
+        {dataLoading ? (
+          <LoadingSpinner /> // Think about removing this loading state if I do not add any backend requests to this
         ) : (
           <>
             {/* Header */}
@@ -129,7 +151,7 @@ export const LandingPage = () => {
             )}
             {error && <div className="text-red-500  text-xs mt-2">{error}</div>}
             <button
-              onClick={handleMoodEntered}
+              onClick={handleInputConfirmation}
               className={` bg-blue-100 cursor-pointer  bg-opacity-50 border-black border text-black rounded-full py-2 px-4 mt-8${
                 validationError && validationTriggered
                   ? " opacity-20 cursor-not-allowed "
