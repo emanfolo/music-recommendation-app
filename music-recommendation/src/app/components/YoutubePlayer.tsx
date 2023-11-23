@@ -1,25 +1,12 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import YouTube from "react-youtube";
-
-const sampleBackgroundColor = {
-  backgroundColor: "bg-gradient-to-r from-yellow-300 to-orange-500",
-};
-
-const extractYouTubeId = (link: string): string | null => {
-  const regex =
-    /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})$/;
-  const match = link.match(regex);
-
-  return match ? match[1] : null;
-};
 
 interface YoutubeObject {
   videoId: string;
   title: string;
   artist: string;
-  thumbnail: string;
+  artwork: string;
 }
 
 const mockData: YoutubeObject[] = [
@@ -27,25 +14,25 @@ const mockData: YoutubeObject[] = [
     title: "Stronger",
     artist: "Kanye West",
     videoId: "PsO6ZnUZI0g",
-    thumbnail: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
+    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
   },
   {
     title: "Last Name",
     artist: "Kanye West",
     videoId: "yDVwi4XKwhY",
-    thumbnail: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
+    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
   },
   {
     title: "Come to life",
     artist: "Kanye West",
     videoId: "jV2aDh8hCeI",
-    thumbnail: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
+    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
   },
   {
     title: "Champagne Coast",
     artist: "Blood Orange",
     videoId: "nO6y1-erVEw",
-    thumbnail: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
+    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
   },
 ];
 
@@ -62,6 +49,21 @@ const PauseIcon = () => (
     >
       <g>
         <path d="M61.44,0c16.97,0,32.33,6.88,43.44,18c11.12,11.12,18,26.48,18,43.44c0,16.97-6.88,32.33-18,43.44 c-11.12,11.12-26.48,18-43.44,18c-16.97,0-32.33-6.88-43.44-18C6.88,93.77,0,78.41,0,61.44C0,44.47,6.88,29.11,18,18 C29.11,6.88,44.47,0,61.44,0L61.44,0z M42.3,39.47h13.59v43.95l-13.59,0V39.47L42.3,39.47L42.3,39.47z M66.99,39.47h13.59v43.95 l-13.59,0V39.47L66.99,39.47L66.99,39.47z M97.42,25.46c-9.21-9.21-21.93-14.9-35.98-14.9c-14.05,0-26.78,5.7-35.98,14.9 c-9.21,9.21-14.9,21.93-14.9,35.98s5.7,26.78,14.9,35.98c9.21,9.21,21.93,14.9,35.98,14.9c14.05,0,26.78-5.7,35.98-14.9 c9.21-9.21,14.9-21.93,14.9-35.98S106.63,34.66,97.42,25.46L97.42,25.46z" />
+      </g>
+    </svg>
+  </>
+);
+
+const PlayIcon = () => (
+  <>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 122.88 122.88"
+      fillRule="evenodd"
+      clipRule="evenodd"
+    >
+      <g>
+        <path d="M61.44,0c33.93,0,61.44,27.51,61.44,61.44s-27.51,61.44-61.44,61.44S0,95.37,0,61.44S27.51,0,61.44,0L61.44,0z M83.31,65.24c3.13-2.02,3.12-4.27,0-6.06L50.98,40.6c-2.55-1.6-5.21-0.66-5.14,2.67l0.1,37.55c0.22,3.61,2.28,4.6,5.32,2.93 L83.31,65.24L83.31,65.24z M61.44,12.48c27.04,0,48.96,21.92,48.96,48.96c0,27.04-21.92,48.96-48.96,48.96S12.48,88.48,12.48,61.44 C12.48,34.4,34.4,12.48,61.44,12.48L61.44,12.48z" />
       </g>
     </svg>
   </>
@@ -105,42 +107,48 @@ const PreviousIcon = () => (
   </>
 );
 
-const ControlCenter = () => {
+interface ControlCenterProps {
+  onPauseHandler: () => void;
+  playing: boolean;
+}
+
+const ControlCenter = ({ onPauseHandler, playing }: ControlCenterProps) => {
   return (
     <div className="control-center flex justify-around w-full mt-8">
-      <div className=" w-1/12">
+      <div className=" w-1/12 cursor-pointer">
         <PreviousIcon />
       </div>
-      <div className=" w-1/12">
-        <PauseIcon />
+      <div className=" w-1/12 cursor-pointer" onClick={onPauseHandler}>
+        {playing ? <PauseIcon /> : <PlayIcon />}
       </div>
-      <div className=" w-1/12">
+      <div className=" w-1/12 cursor-pointer">
         <NextIcon />
       </div>
     </div>
   );
 };
 
+// change this to extend YoutubePlayerProps
 interface PlaylistProps {
   songs: YoutubeObject[];
-  currentlyPlaying: string | null;
+  currentSong: string | null;
+  playing: boolean;
 }
 
 // Add conditional to add extra css if song is currently playing
-
-const Playlist = ({ songs, currentlyPlaying }: PlaylistProps) => (
+const Playlist = ({ songs, currentSong, playing }: PlaylistProps) => (
   <div className=" rounded-lg border bg-slate-400  bg-opacity-50 px-4 py-2 my-6">
     <div>
       {songs.map((song) => (
         <div key={song.videoId} className={`h-16 flex items-center`}>
           <div
             className={`h-12 w-12 overflow-hidden rounded-full items-center flex ${
-              currentlyPlaying === song.videoId ? "animate-rotate" : "" // Apply rotation animation if currentlyPlaying is true
+              currentSong === song.videoId && playing ? "animate-rotate" : ""
             }`}
           >
             <img
               className="h-16 w-16 object-cover rounded-full"
-              src={song.thumbnail}
+              src={song.artwork}
               alt={`${song.title}-${song.artist}-thumbnail`}
             />
           </div>
@@ -154,39 +162,67 @@ const Playlist = ({ songs, currentlyPlaying }: PlaylistProps) => (
   </div>
 );
 
-export const EmbeddedYoutubePlayer = () => {
-  const videoId = "PsO6ZnUZI0g"; // Replace with the actual YouTube video ID
+interface YoutubePlayerProps {
+  playlist: YoutubeObject[];
+}
 
-  const [player, setPlayer] = useState(null);
-  const [currentVideoId, setCurrentVideoId] = useState(mockData[0].videoId);
+export const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
+  const [player, setPlayer] = useState<any>();
+  const [data, setData] = useState<any>();
+  const [currentVideoId, setCurrentVideoId] = useState(mockData[0].videoId); // use this to switch between songs
+  const [playlistIds, setPlaylistIds] = useState<string>();
+
   const onReady = (e) => {
     setPlayer(e.target);
   };
 
-  // const onPlayPauseHandler = () => {
-  //     player.playVideo()
-  // }
+  const [playing, setPlaying] = useState(false);
+
+  const onPauseHandler = () => {
+    playing ? player.pauseVideo() : player.playVideo();
+  };
+
+  const onStateChange = (e) => {
+    if (e.data === 1) {
+      setPlaying(true);
+    } else {
+      setPlaying(false);
+    }
+  };
+
+  const collateVideoIds = (array: { videoId: string }[]): string => {
+    return array.map((item) => item.videoId).join(",");
+  };
+
+  useEffect(() => {
+    if (window !== undefined && playlist !== undefined) {
+      setPlaylistIds(collateVideoIds(playlist));
+    }
+  });
 
   const opts = {
     height: "390",
     width: "640",
     playerVars: {
       // https://developers.google.com/youtube/player_parameters
-      autoplay: 1,
-      playlist: "PsO6ZnUZI0g,yDVwi4XKwhY,jV2aDh8hCeI,nO6y1-erVEw",
+      autoplay: 0,
+      playlist: playlistIds, //playlistString,
       controls: 0,
     },
   };
 
   return (
     <div>
-      <div className="glow-container">
-        <YouTube onReady={onReady} opts={opts} />
+      <div className="glow-container mt-3">
+        <YouTube onReady={onReady} opts={opts} onStateChange={onStateChange} />
       </div>
       <div className="flex flex-col justify-center">
-        <ControlCenter />
-
-        <Playlist songs={mockData} currentlyPlaying={mockData[0].videoId} />
+        <ControlCenter onPauseHandler={onPauseHandler} playing={playing} />
+        <Playlist
+          songs={mockData}
+          currentSong={"yDVwi4XKwhY"}
+          playing={playing}
+        />
       </div>
     </div>
   );

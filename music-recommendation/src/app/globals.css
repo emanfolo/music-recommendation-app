@@ -188,5 +188,5 @@ body {
 }
 
 .animate-rotate {
-  animation: spin 2s linear infinite;
+  animation: spin 2.5s linear infinite;
 }
