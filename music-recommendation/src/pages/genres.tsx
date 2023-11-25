@@ -1,27 +1,26 @@
 import { useRouter } from "next/navigation";
 import "../app/globals.css";
-import { useEffect, useState } from "react";
-import { httpsCallable } from "firebase/functions";
-import { functions, init } from "../../firebase";
-
-const LoadingSpinner: React.FC = () => {
-  return <span className="loader"></span>;
-};
+import { useState } from "react";
+import { Nav } from "app/components";
 
 const spotifySeedGenres = [
   "pop",
   "rock",
   "hip-hop",
-  "rap",
+  "afrobeat",
   "electronic",
   "dance",
   "country",
+  "alternative",
+
+  "dancehall",
   "folk",
   "indie",
-  "alternative",
-  "R&B",
+  "r-n-b",
   "jazz",
   "blues",
+  "gospel",
+
   "reggae",
   "classical",
   "metal",
@@ -31,32 +30,11 @@ const spotifySeedGenres = [
   "ambient",
 ];
 
-const Tick = () => (
-  <svg
-    id="Layer_1"
-    data-name="Layer 1"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 512 457.57"
-  >
-    <defs></defs>
-    <path
-      className="cls-1"
-      fillRule="evenodd"
-      d="M0,220.57c100.43-1.33,121-5.2,191.79,81.5,54.29-90,114.62-167.9,179.92-235.86C436-.72,436.5-.89,512,.24,383.54,143,278.71,295.74,194.87,457.57,150,361.45,87.33,280.53,0,220.57Z"
-    />
-  </svg>
-);
-
 const Genres = () => {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
-  const [loading, setLoading] = useState<Boolean>(false);
   const [validationError, setValidationError] = useState<string>("");
 
   const router = useRouter();
-
-  useEffect(() => {
-    init().then(() => setLoading(false));
-  });
 
   const handleClick = (e) => {
     setSelectedGenres((prevSelectedGenres) => {
@@ -73,10 +51,8 @@ const Genres = () => {
 
   // Validation function to check the length of selectedGenres
   const validateGenres = () => {
-    if (selectedGenres.length < 3 || selectedGenres.length > 5) {
-      setValidationError(
-        "Please select between 3 and 5 of your favorite genres",
-      );
+    if (selectedGenres.length < 3 || selectedGenres.length >= 5) {
+      setValidationError("Please select between 3 and 5 genres.");
       return false;
     } else {
       setValidationError("");
@@ -93,12 +69,15 @@ const Genres = () => {
     const seedGenres = selectedGenres.join(", ");
 
     localStorage.setItem("seedGenres", seedGenres);
-    router.push("/player");
+    localStorage.setItem("data", "");
+    router.push("/Player");
   };
 
   return (
-    <div className=" flex flex-col justify-center items-center min-h-screen min-w-full bg-gray-200">
-      <text className="my-10 text-black text-4xl">
+    <div className=" flex flex-col justify-center items-center h-screen  bg-white max-sm:h-full">
+      <Nav sticky={true} />
+
+      <text className=" mt-40 mb-8 mx-7 text-black text-2xl">
         Select your favourite Genres
       </text>
       <div className=" flex justify-center flex-wrap max-w-md items-center ">
@@ -107,37 +86,39 @@ const Genres = () => {
             onClick={handleClick}
             id={genre}
             key={index}
-            className={`p-6 pl-5 h-11 mx-1 my-1 flex justify-center items-center ${
-              selectedGenres.includes(genre) ? " bg-blue-500" : "bg-white"
-            }  shadow-md text-black  rounded-xl cursor-pointer`}
+            className={`p-6 h-11 mx-1 my-1 flex hover:bg-blue-800 hover:bg-opacity-70 hover:text-white items-center ${
+              selectedGenres.includes(genre)
+                ? " bg-blue-800 text-white hover:bg-opacity-90"
+                : "bg-white"
+            }  shadow-md text-black rounded-xl cursor-pointer relative`}
           >
-            <div
-              className={`w-3 h-3 opacity-0 ${
-                selectedGenres.includes(genre) && "opacity-100"
-              }`}
-            >
-              <Tick />
-            </div>
             {genre}
           </div>
         ))}
       </div>
-      <div>
+      <div className="h-10 mt-6">
+        <div
+          className={`text-red-500 text-s  opacity-0 ${
+            validationError && "opacity-100"
+          }`}
+        >
+          {validationError}
+        </div>
+      </div>
+      <div className="flex pt-2  max-sm:pt-0">
         <button
-          className="m-8 p-4 border  rounded-full bg-white text-black"
+          className="m-8 p-4 border    w-36  rounded-lg bg-white text-black  hover:bg-blue-800 hover:text-white"
           onClick={() => router.push("/")}
         >
-          Restart
+          Restart Flow
         </button>
+
         <button
-          className="m-8 p-4 border  rounded-full bg-blue-500 text-black"
+          className="m-8 p-4 border w-36   rounded-lg text-white bg-black hover:bg-blue-800"
           onClick={handleConfirm}
         >
           Create Playlist
         </button>
-        {validationError && (
-          <div className="text-red-500 text-xs mt-2">{validationError}</div>
-        )}
       </div>
     </div>
   );

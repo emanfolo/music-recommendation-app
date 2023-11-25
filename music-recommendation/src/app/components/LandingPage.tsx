@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import logo from "../../../public/logo.jpeg";
+import Image from "next/image";
 
 export const LandingPage = () => {
   const [error, setError] = useState("");
@@ -51,7 +53,7 @@ export const LandingPage = () => {
     setValidationTriggered(true);
     if (!validationError) {
       localStorage.setItem("moodInput", mood);
-      router.push("/genres");
+      router.push("/Genres");
     }
   };
   const handleKeyUp = (e) => {
@@ -66,20 +68,19 @@ export const LandingPage = () => {
         id="page1"
         className={`h-screen flex flex-col justify-center items-center bg-white text-black`}
       >
-        {/* Header */}
-        <h1 className="text-5xl font-bold mb-8 animate-fadeIn">
-          Mood Music App
-        </h1>
-        {/* Subtitle */}
-        <h3
-          className="text-center mb-16 animate-fadeIn"
-          style={{ paddingTop: "40px" }}
-        >
+        <Image
+          src={logo}
+          alt="logo of mood sync "
+          height={400}
+          width={400}
+          className="animate-fadeIn"
+        />
+        <h3 className="text-center mb-16 animate-fadeIn">
           Discover new music tailored to you. Use AI to create a custom Spotify
           or YouTube playlist.
         </h3>
         {/* Mood input */}
-        <div className="flex  h-12 animate-fadeIn">
+        <div className="flex flex-col items-center  h-12 animate-fadeIn">
           <div
             className={`rounded-md border border-black p-3 text-center sm:min-w-[400px] md:min-w-[500px] lg:min-w-[650px] shadow-md ${
               validationError && validationTriggered
@@ -95,14 +96,14 @@ export const LandingPage = () => {
               onKeyUp={handleKeyUp}
             />
           </div>
+          {validationError && validationTriggered && (
+            <div className="text-red-500  text-xs mt-2">{validationError}</div>
+          )}
         </div>
-        {validationError && validationTriggered && (
-          <div className="text-red-500  text-xs mt-2">{validationError}</div>
-        )}
         {error && <div className="text-red-500  text-xs mt-2">{error}</div>}
         <button
           onClick={handleInputConfirmation}
-          className={` bg-blue-100 cursor-pointer  bg-opacity-50 border-black border text-black rounded-full py-2 px-4 mt-8${
+          className={` bg-blue-100 cursor-pointer  bg-opacity-50 border-black border text-black rounded-full py-2 px-4 mt-9${
             validationError && validationTriggered
               ? " opacity-20 cursor-not-allowed "
               : ""
