@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import YouTube from "react-youtube";
 
@@ -9,32 +10,22 @@ interface YoutubeObject {
   artwork: string;
 }
 
-const mockData: YoutubeObject[] = [
-  {
-    title: "Stronger",
-    artist: "Kanye West",
-    videoId: "PsO6ZnUZI0g",
-    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
-  },
-  {
-    title: "Last Name",
-    artist: "Kanye West",
-    videoId: "yDVwi4XKwhY",
-    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
-  },
-  {
-    title: "Come to life",
-    artist: "Kanye West",
-    videoId: "jV2aDh8hCeI",
-    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
-  },
-  {
-    title: "Champagne Coast",
-    artist: "Blood Orange",
-    videoId: "nO6y1-erVEw",
-    artwork: "https://i.ytimg.com/vi/EMnQwBTJnMM/hqdefault.jpg",
-  },
-];
+const NewTabIcon = () => (
+  <>
+    <svg
+      version="1.1"
+      id="Layer_1"
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      viewBox="0 0 122.6 122.88"
+    >
+      <g>
+        <path d="M110.6,72.58c0-3.19,2.59-5.78,5.78-5.78c3.19,0,5.78,2.59,5.78,5.78v33.19c0,4.71-1.92,8.99-5.02,12.09 c-3.1,3.1-7.38,5.02-12.09,5.02H17.11c-4.71,0-8.99-1.92-12.09-5.02c-3.1-3.1-5.02-7.38-5.02-12.09V17.19 C0,12.48,1.92,8.2,5.02,5.1C8.12,2,12.4,0.08,17.11,0.08h32.98c3.19,0,5.78,2.59,5.78,5.78c0,3.19-2.59,5.78-5.78,5.78H17.11 c-1.52,0-2.9,0.63-3.91,1.63c-1.01,1.01-1.63,2.39-1.63,3.91v88.58c0,1.52,0.63,2.9,1.63,3.91c1.01,1.01,2.39,1.63,3.91,1.63h87.95 c1.52,0,2.9-0.63,3.91-1.63s1.63-2.39,1.63-3.91V72.58L110.6,72.58z M112.42,17.46L54.01,76.6c-2.23,2.27-5.89,2.3-8.16,0.07 c-2.27-2.23-2.3-5.89-0.07-8.16l56.16-56.87H78.56c-3.19,0-5.78-2.59-5.78-5.78c0-3.19,2.59-5.78,5.78-5.78h26.5 c5.12,0,11.72-0.87,15.65,3.1c2.48,2.51,1.93,22.52,1.61,34.11c-0.08,3-0.15,5.29-0.15,6.93c0,3.19-2.59,5.78-5.78,5.78 c-3.19,0-5.78-2.59-5.78-5.78c0-0.31,0.08-3.32,0.19-7.24C110.96,30.94,111.93,22.94,112.42,17.46L112.42,17.46z" />
+      </g>
+    </svg>
+  </>
+);
 
 const PauseIcon = () => (
   <>
@@ -109,19 +100,26 @@ const PreviousIcon = () => (
 
 interface ControlCenterProps {
   onPauseHandler: () => void;
+  onNextHandler: () => void;
+  onPrevHandler: () => void;
   playing: boolean;
 }
 
-const ControlCenter = ({ onPauseHandler, playing }: ControlCenterProps) => {
+const ControlCenter = ({
+  onPauseHandler,
+  onNextHandler,
+  onPrevHandler,
+  playing,
+}: ControlCenterProps) => {
   return (
     <div className="control-center flex justify-around w-full mt-8">
-      <div className=" w-1/12 cursor-pointer">
+      <div className=" w-1/12 cursor-pointer" onClick={onPrevHandler}>
         <PreviousIcon />
       </div>
       <div className=" w-1/12 cursor-pointer" onClick={onPauseHandler}>
         {playing ? <PauseIcon /> : <PlayIcon />}
       </div>
-      <div className=" w-1/12 cursor-pointer">
+      <div className=" w-1/12 cursor-pointer" onClick={onNextHandler}>
         <NextIcon />
       </div>
     </div>
@@ -137,17 +135,22 @@ interface PlaylistProps {
 
 // Add conditional to add extra css if song is currently playing
 const Playlist = ({ songs, currentSong, playing }: PlaylistProps) => (
-  <div className=" rounded-lg border bg-slate-400  bg-opacity-50 px-4 py-2 my-6">
+  <div className=" rounded-lg border bg-slate-400  bg-opacity-50 p-2 my-6">
     <div>
       {songs.map((song) => (
-        <div key={song.videoId} className={`h-16 flex items-center`}>
+        <Link
+          key={song.videoId}
+          target="_blank"
+          href={`https://www.youtube.com/watch?v=${song.videoId}`}
+          className={` group h-16 flex items-center cursor-pointer px-2 rounded-lg hover:bg-white`}
+        >
           <div
             className={`h-12 w-12 overflow-hidden rounded-full items-center flex ${
               currentSong === song.videoId && playing ? "animate-rotate" : ""
             }`}
           >
             <img
-              className="h-16 w-16 object-cover rounded-full"
+              className="h-12 w-12 object-cover rounded-full"
               src={song.artwork}
               alt={`${song.title}-${song.artist}-thumbnail`}
             />
@@ -156,7 +159,10 @@ const Playlist = ({ songs, currentSong, playing }: PlaylistProps) => (
             <div>{song.title}</div>
             <div>{song.artist}</div>
           </div>
-        </div>
+          <div className="h-5 w-5  ml-auto opacity-0 group-hover:opacity-70 mr-3">
+            <NewTabIcon />
+          </div>
+        </Link>
       ))}
     </div>
   </div>
@@ -166,14 +172,16 @@ interface YoutubePlayerProps {
   playlist: YoutubeObject[];
 }
 
-export const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
+const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
   const [player, setPlayer] = useState<any>();
-  const [data, setData] = useState<any>();
-  const [currentVideoId, setCurrentVideoId] = useState(mockData[0].videoId); // use this to switch between songs
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0); // use this to switch between songs
   const [playlistIds, setPlaylistIds] = useState<string>();
+  const [videoIds, setVideoIds] = useState<string[]>([]);
 
   const onReady = (e) => {
     setPlayer(e.target);
+    setCurrentVideoIndex(0);
+    setVideoIds(extractVideoIds(playlist));
   };
 
   const [playing, setPlaying] = useState(false);
@@ -183,6 +191,8 @@ export const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
   };
 
   const onStateChange = (e) => {
+    const newIndex = player.getPlaylistIndex();
+    setCurrentVideoIndex(newIndex);
     if (e.data === 1) {
       setPlaying(true);
     } else {
@@ -194,9 +204,38 @@ export const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
     return array.map((item) => item.videoId).join(",");
   };
 
+  const extractVideoIds = (array: { videoId: string }[]) => {
+    return array.map((item) => item.videoId);
+  };
+
+  const selectIndex = (index: number) => {
+    setCurrentVideoIndex(index);
+  };
+
+  const changeIndex = (
+    index: number,
+    setIndex: (newIndex: number) => void,
+    direction: "prev" | "next",
+    maxIndex = 4,
+  ) => {
+    let newIndex;
+
+    if (direction === "next") {
+      // Increment index and loop back to 0 if it reaches maxIndex
+      newIndex = (index + 1) % (maxIndex + 1);
+    } else if (direction === "prev") {
+      // Decrement index and loop back to maxIndex if it reaches 0
+      newIndex = index === 0 ? maxIndex : index - 1;
+    } else {
+      throw new Error("Invalid direction");
+    }
+    setIndex(newIndex);
+  };
+
   useEffect(() => {
-    if (window !== undefined && playlist !== undefined) {
+    if (window !== undefined && playlist !== undefined && playlist.length > 0) {
       setPlaylistIds(collateVideoIds(playlist));
+      // setVideoIds(playlist.map((item) => item.videoId))
     }
   });
 
@@ -204,26 +243,41 @@ export const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
     height: "390",
     width: "640",
     playerVars: {
-      // https://developers.google.com/youtube/player_parameters
       autoplay: 0,
-      playlist: playlistIds, //playlistString,
+      playlist: playlistIds,
       controls: 0,
+      loop: true,
     },
   };
 
   return (
     <div>
-      <div className="glow-container mt-3">
-        <YouTube onReady={onReady} opts={opts} onStateChange={onStateChange} />
-      </div>
-      <div className="flex flex-col justify-center">
-        <ControlCenter onPauseHandler={onPauseHandler} playing={playing} />
-        <Playlist
-          songs={mockData}
-          currentSong={"yDVwi4XKwhY"}
-          playing={playing}
-        />
-      </div>
+      {playlist.length > 0 && (
+        <>
+          <div className="glow-container mt-3">
+            <YouTube
+              onReady={onReady}
+              opts={opts}
+              onStateChange={onStateChange}
+            />
+          </div>
+          <div className="flex flex-col justify-center">
+            <ControlCenter
+              onPrevHandler={() => player.previousVideo()}
+              onNextHandler={() => player.nextVideo()}
+              onPauseHandler={onPauseHandler}
+              playing={playing}
+            />
+            <Playlist
+              songs={playlist}
+              currentSong={videoIds[currentVideoIndex]}
+              playing={playing}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };
+
+export default YoutubePlayer;
