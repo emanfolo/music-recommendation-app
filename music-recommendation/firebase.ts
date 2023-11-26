@@ -1,15 +1,16 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import {connectFirestoreEmulator, getFirestore} from "firebase/firestore";
-import {connectFunctionsEmulator, getFunctions} from "firebase/functions";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { Functions } from "firebase/functions";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-let db; let functions: Functions
+let db;
+let functions: Functions;
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -18,6 +19,7 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  functionsUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL,
 };
 
 // Initialize Firebase
@@ -28,10 +30,13 @@ export async function init() {
   await initializeApp(firebaseConfig);
   db = getFirestore();
   functions = getFunctions(app);
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
-      connectFirestoreEmulator(db, "localhost", 8080)
-      connectFunctionsEmulator(functions, "localhost", 5001)
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.NODE_ENV === "test"
+  ) {
+    connectFirestoreEmulator(db, "localhost", 8080);
+    connectFunctionsEmulator(functions, "localhost", 5001);
   }
 }
 
-export {db, functions}
+export { db, functions };

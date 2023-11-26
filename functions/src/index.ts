@@ -2,14 +2,13 @@
 import * as functions from "firebase-functions";
 import OpenAI from "openai";
 import axios from "axios";
-export const getYoutubeData = functions.https.onCall(async (data, context) => {
+export const getYoutubeData = functions.https.onCall(async (data) => {
   // Step 0: Define Spotify API endpoint, retrieve Spotify client credentials and OpenAI key
   const spotifyApiEndpoint = "https://api.spotify.com/v1/recommendations";
   const spotifyTokenEndpoint = "https://accounts.spotify.com/api/token";
-  const clientId = process.env.SPOTIFY_CLIENT_ID || "";
-  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET || "";
-  const openAiKey = process.env.OPEN_AI_KEY || "";
-  // Change process.env to functions.config().spotify.client_id when time is right
+  const clientId = functions.config().spotify.client_id;
+  const clientSecret = functions.config().spotify.client_secret;
+  const openAiKey = functions.config().openai.api_key;
 
   if (!clientId || !clientSecret || !openAiKey) {
     console.error("Missing required environment variable.");
@@ -21,11 +20,11 @@ export const getYoutubeData = functions.https.onCall(async (data, context) => {
 
   try {
     // Step 1: Request music parameters from OpenAI based on user's mood
-    const userPrompt = `Generate music parameters (target_valence, target_energy, target_danceability) that match the mood of: ${data.mood}. Provide values that represent the desired emotional and energetic qualities of the music. Keep the response in JSON format.`;
+    const userPrompt = `Generate music parameters (targetValence, targetEnergy, targetDanceability) that match the mood of: ${data.mood}. Provide values that represent the desired emotional and energetic qualities of the music. Keep the response in JSON format.`;
     const systemPrompt =
       "System, you are an AI music parameter generator. Your task is to generate music parameters, including target_valence, target_energy, and target_danceability, based on a user's description of their mood. The goal is to provide values that align with the emotional and energetic qualities mentioned by the user. Ensure that the response is in JSON format.";
 
-    const { target_valence, target_energy, target_danceability } =
+    const { targetValence, targetEnergy, targetDanceability } =
       await getMusicParametersFromOpenAI(openai, userPrompt, systemPrompt);
 
     try {
@@ -39,9 +38,9 @@ export const getYoutubeData = functions.https.onCall(async (data, context) => {
       try {
         // Step 3: Call the Spotify API using the obtained access token and music parameters
         const params = {
-          target_valence: target_valence,
-          target_energy: target_energy,
-          target_danceability: target_danceability,
+          target_valence: targetValence,
+          target_energy: targetEnergy,
+          target_danceability: targetDanceability,
           seed_genres: data.seedGenres,
           limit: 5,
         };
@@ -53,7 +52,7 @@ export const getYoutubeData = functions.https.onCall(async (data, context) => {
 
         // Step 4: Call the Youtube API to obtain a videoId for playback
         const responseData = await Promise.all(
-          spotifyData.map((track: any, index: any) =>
+          spotifyData.map((track: any, index: number) =>
             getYoutubeId(track, index),
           ),
         );
@@ -73,8 +72,8 @@ export const getYoutubeData = functions.https.onCall(async (data, context) => {
 });
 
 // Function to get Youtube Video ID
-const getYoutubeId = async (track: any, index: any) => {
-  const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+const getYoutubeId = async (track: any, index: number) => {
+  const youtubeApiKey = functions.config().youtube.api_key;
   const url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${`${track.title} - ${track.artist}`}&type=video&key=${youtubeApiKey}`;
   try {
     const result = await fetch(url);
@@ -102,9 +101,9 @@ const getMusicParametersFromOpenAI = async (
   });
 
   const musicParams = choices[0]?.message?.content || "No response from OpenAI";
-  const { target_valence, target_energy, target_danceability } =
+  const { targetValence, targetEnergy, targetDanceability } =
     JSON.parse(musicParams);
-  return { target_valence, target_energy, target_danceability };
+  return { targetValence, targetEnergy, targetDanceability };
 };
 
 // Function to obtain Spotify access token
@@ -134,7 +133,11 @@ const getSpotifyAccessToken = async (
 const callSpotifyAPI = async (
   spotifyApiEndpoint: string,
   accessToken: string,
-  params: any,
+  params: {
+    target_valence: number;
+    target_energy: number;
+    target_danceability: number;
+  },
 ) => {
   const spotifyResponse = await axios.get(spotifyApiEndpoint, {
     headers: {
