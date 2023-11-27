@@ -1,6 +1,7 @@
 import logo from "../../../public/logo.jpeg";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface NavProps {
   sticky: boolean;
@@ -17,15 +18,16 @@ export const Nav = ({ sticky }: NavProps) => {
   return (
     <nav className={` w-full z-20 top-0 start-0 ${sticky && "fixed"}`}>
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <Image
-            src={logo}
-            alt="logo of mood sync "
-            height={60}
-            width={60}
-            className="animate-fadeIn"
-          />
-        </a>
+        <Link
+          href="/"
+          className="flex items-center space-x-3 rtl:space-x-reverse"
+        >
+          <Image src={logo} alt="Mood Sync Logo" height={60} width={60} />
+        </Link>
+
+        <span className=" w-0 h-0 opacity-0 sm:text-xl sm:w-max  sm:opacity-100 sm:h-max  font-bold">
+          Curated playlists based on your mood
+        </span>
         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse items-center">
           <button
             onClick={reset}

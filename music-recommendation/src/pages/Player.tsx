@@ -11,7 +11,7 @@ const DynamicYoutubePlayer = dynamic(
 );
 
 interface YoutubeObject {
-  videoId: string; //change soon
+  videoId: string;
   title: string;
   artist: string;
   artwork: string;
@@ -22,12 +22,14 @@ const LoadingSpinner: React.FC = () => {
 };
 
 const PlayerPage = () => {
-  const [playlist, setPlaylist] = useState<YoutubeObject[]>([]); // Add type checks
+  const [playlist, setPlaylist] = useState<YoutubeObject[]>([]);
   const [error, setError] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<
+      { responseData: YoutubeObject[] } | undefined
+    > => {
       const mood = localStorage.getItem("moodInput");
       const seedGenres = localStorage.getItem("seedGenres");
       const requestData = httpsCallable<
@@ -59,18 +61,29 @@ const PlayerPage = () => {
       setDataLoading(false);
     } else {
       setDataLoading(true);
-      init().then(() => fetchData());
+      if (typeof window !== "undefined") {
+        // Condition to ensure the request is not made from the server side
+        init().then(() => fetchData());
+      }
     }
   }, []);
 
   return (
-    <div className=" h-full min-h-screen w-screen flex flex-col justify-center items-center bg-white">
+    <div
+      className={` h-full min-h-screen w-screen flex flex-col justify-center items-center bg-white`}
+    >
       {dataLoading ? (
         <LoadingSpinner />
       ) : (
         <>
           <Nav sticky={false} />
-          <DynamicYoutubePlayer playlist={playlist} />
+          {error ? (
+            <div className="text-red-500 text-2xl font-bold  m-auto">
+              {error}
+            </div>
+          ) : (
+            <DynamicYoutubePlayer playlist={playlist} />
+          )}
         </>
       )}
     </div>

@@ -168,17 +168,30 @@ body {
 
 .glow-container {
   box-shadow:
-    0 0 60px #00ff00,
-    0 0 60px #00ff00,
-    0 0 60px #00ff00;
-  transition: box-shadow 0.3s ease-in-out;
+    0 0 0px rgba(0, 128, 255, 0),
+    0 0 0px rgba(0, 255, 0, 0),
+    0 0 0px rgba(0, 128, 255, 0);
+  animation: flash 3s infinite;
+}
+
+@keyframes flash {
+  0% {
+    box-shadow:
+      0 0 0px rgba(0, 128, 255, 1),
+      0 0 0px rgba(0, 255, 0, 0.7),
+      0 0 0px rgba(0, 128, 255, 0.5);
+  }
+  100% {
+    box-shadow:
+      0 0 20px rgba(0, 128, 255, 0),
+      0 0 40px rgba(0, 255, 0, 0),
+      0 0 60px rgba(0, 128, 255, 0);
+  }
 }
 
 .glow-container:hover {
-  box-shadow:
-    0 0 20px #00ff00,
-    0 0 20px #00ff00,
-    0 0 60px #00ff00; /* Adjust the glow effect on hover */
+  box-shadow: unset;
+  animation: none;
 }
 
 @keyframes spin {
@@ -188,5 +201,51 @@ body {
 }
 
 .animate-rotate {
-  animation: spin 2.5s linear infinite;
+  animation: spin 4s linear infinite;
+}
+
+@keyframes bounce {
+  10% {
+    transform: scaleY(0.3); /* start by scaling to 30% */
+  }
+
+  30% {
+    transform: scaleY(1); /* scale up to 100% */
+  }
+
+  60% {
+    transform: scaleY(0.5); /* scale down to 50% */
+  }
+
+  80% {
+    transform: scaleY(0.75); /* scale up to 75% */
+  }
+
+  100% {
+    transform: scaleY(0.6); /* scale down to 60% */
+  }
+}
+
+.music-bar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  width: 20px;
+  height: 20px;
+}
+
+.music-bar-span {
+  width: 4px;
+  height: 100%;
+  background-color: rgba(0, 128, 255, 0.7);
+  border-radius: 4px;
+  content: "";
+  animation: bounce 2.2s ease infinite alternate;
+  &:nth-of-type(2) {
+    animation-delay: -2.2s; /* Start at the end of animation */
+  }
+
+  &:nth-of-type(3) {
+    animation-delay: -3.7s; /* Start mid-way of return of animation */
+  }
 }
