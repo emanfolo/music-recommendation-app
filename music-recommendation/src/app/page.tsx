@@ -5,7 +5,9 @@ export default function Home() {
       <head>
         <title>Discover new music</title>
       </head>
-      <LandingPage />
+      <body>
+        <LandingPage />
+      </body>
     </div>
   );
 }

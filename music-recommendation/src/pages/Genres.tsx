@@ -86,7 +86,7 @@ const Genres = () => {
       >
         <Image src={logo} alt="Mood Sync Logo" height={160} width={160} />
       </a>
-      <text className=" mt-3 mb-8 mx-7 text-black text-2xl">
+      <text className=" mt-3 mb-8 mx-7 text-black text-2xl text-center">
         Select your favourite Genres
       </text>
       <div className=" flex justify-center flex-wrap max-w-md items-center ">
