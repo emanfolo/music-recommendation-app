@@ -63,7 +63,7 @@ export const LandingPage = () => {
   return (
     <div className="">
       <div
-        className={`h-full min-h-screen flex flex-col justify-center items-center bg-white text-black`}
+        className={`h-full min-h-screen flex flex-col justify-start items-center bg-white text-black px-2 xl:justify-center`}
       >
         <Image
           src={logo}
@@ -79,7 +79,7 @@ export const LandingPage = () => {
         {/* Mood input */}
         <div className="flex flex-col items-center  h-12 animate-fadeIn">
           <div
-            className={`rounded-md border border-black p-3 text-center sm:min-w-[400px] md:min-w-[500px] lg:min-w-[650px] shadow-md ${
+            className={`rounded-md border border-black p-3 text-center min-w-[320px] sm:min-w-[500px] lg:min-w-[650px] shadow-md ${
               validationError && validationTriggered
                 ? "shake border-red-500"
                 : ""

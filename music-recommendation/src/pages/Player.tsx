@@ -70,7 +70,9 @@ const PlayerPage = () => {
 
   return (
     <div
-      className={` h-full min-h-screen w-screen flex flex-col justify-center items-center bg-white`}
+      className={` h-full min-h-screen w-screen flex flex-col justify-start items-center bg-white ${
+        dataLoading && "justify-center"
+      }`}
     >
       {dataLoading ? (
         <LoadingSpinner />
@@ -78,11 +80,14 @@ const PlayerPage = () => {
         <>
           <Nav sticky={false} />
           {error ? (
-            <div className="text-red-500 text-2xl font-bold  m-auto">
+            <div className="text-red-500 text-2xl font-bold  m-auto text-center">
               {error}
             </div>
           ) : (
-            <DynamicYoutubePlayer playlist={playlist} />
+            <DynamicYoutubePlayer
+              playlist={playlist}
+              mood={localStorage.getItem("moodInput")}
+            />
           )}
         </>
       )}

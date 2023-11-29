@@ -131,9 +131,10 @@ const Playlist = ({ songs, currentSong, playing }: PlaylistProps) => (
 
 interface YoutubePlayerProps {
   playlist: YoutubeObject[];
+  mood: string | null;
 }
 
-const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
+const YoutubePlayer = ({ playlist, mood }: YoutubePlayerProps) => {
   const [player, setPlayer] = useState<any>();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [playlistIds, setPlaylistIds] = useState<string>();
@@ -192,6 +193,11 @@ const YoutubePlayer = ({ playlist }: YoutubePlayerProps) => {
     <div>
       {playlist.length > 0 && (
         <>
+          {mood && (
+            <p className="text-center font-bold">
+              Playlist created based on your mood of {mood}{" "}
+            </p>
+          )}
           <div
             className={`mx-auto mt-10 max-[410px]:w-[355px] max-[410px]:h-[200px] w-[400px] h-[225px] sm:w-[550px] sm:h-[309px] md:w-[750px] md:h-[420px] lg:w-[850px] lg:h-[478px] ${
               playing && "glow-container"
