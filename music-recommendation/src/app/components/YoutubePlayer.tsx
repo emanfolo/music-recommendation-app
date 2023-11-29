@@ -193,11 +193,7 @@ const YoutubePlayer = ({ playlist, mood }: YoutubePlayerProps) => {
     <div>
       {playlist.length > 0 && (
         <>
-          {mood && (
-            <p className="text-center font-bold">
-              Playlist created based on your mood of {mood}{" "}
-            </p>
-          )}
+          {mood && <p className="text-center font-bold">{mood}</p>}
           <div
             className={`mx-auto mt-10 max-[410px]:w-[355px] max-[410px]:h-[200px] w-[400px] h-[225px] sm:w-[550px] sm:h-[309px] md:w-[750px] md:h-[420px] lg:w-[850px] lg:h-[478px] ${
               playing && "glow-container"
